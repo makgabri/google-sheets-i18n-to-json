@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { status } = require('./helper');
+const { status } = require('./printer');
 
 const saveFile = ({path, data, message}) => {
     try {
@@ -45,13 +45,14 @@ const checkConfig = () => {
         try {
             const contents = JSON.parse(fs.readFileSync('i18n_config.json'));
             if (!contents.path || (typeof contents.path != 'string')) valid = false;
-            if (!contents.languages || Array.isArray(contents.languages)) valid = false;
-            if (!contents.spreadSheetId || (typeof contents.spreadSheetId != 'string')) valid = false;
+            if (!contents.languages || !Array.isArray(contents.languages)) valid = false;
+            if (!contents.spreadsheetId || (typeof contents.spreadsheetId != 'string')) valid = false;
             if (!contents.sheetName || (typeof contents.sheetName != 'string')) valid = false;
             if (!fs.existsSync(contents.path)) valid = false;
             data = contents;
         } catch (err) {
             console.log(status('error') + " " + `Trying to read i18n_config.json but got: ${err}`);
+            valid = false;
         }
     }
 
@@ -63,27 +64,36 @@ const checkConfig = () => {
     return result;
 }
 
-const checkToken = (path) => {
-    const hasToken = fs.existsSync(`${path}/i18n_token.json`);
+/**
+ * Check if token exists
+ * @param {string} location path of the token
+ * @returns an object determining whether token exists, is valid and the contents.
+ */
+const checkToken = (location) => {
+    const path = `${location}/i18n_token.json`;
+    const hasToken = fs.existsSync(`${path}`);
     let valid = hasToken;
     let data = null;
     if (hasToken) {
         try {
-            // TODO: CONTINUE HERE
-            const contents = JSON.parse(fs.readFileSync('i18n_config.json'));
-            if (!contents.path || (typeof contents.path != 'string')) valid = false;
-            if (!contents.languages || Array.isArray(contents.languages)) valid = false;
-            if (!contents.spreadSheetId || (typeof contents.spreadSheetId != 'string')) valid = false;
-            if (!contents.sheetName || (typeof contents.sheetName != 'string')) valid = false;
-            if (!fs.existsSync(contents.path)) valid = false;
+            const contents = JSON.parse(fs.readFileSync(path));
+            if (!contents.access_token || (typeof contents.access_token != 'string')) valid = false;
+            if (!contents.refresh_token || (typeof contents.refresh_token != 'string')) valid = false;
+            if (!contents.scope || (typeof contents.scope != 'string')) valid = false;
+            if (!contents.token_type || (typeof contents.token_type != 'string')) valid = false;
+            if (!contents.expiry_date || (typeof contents.expiry_date != 'number')) valid = false;
+            if (!contents.createdOn || (typeof contents.createdOn != 'string')) valid = false;
             data = contents;
         } catch (err) {
-            console.log(status('error') + " " + `Trying to read i18n_config.json but got: ${err}`);
+            console.log(status('error') + " " + `Trying to read ${path} but got: ${err}`);
+            valid = false;
         }
     }
 
     const result = {
-        hasToken
+        hasToken,
+        valid,
+        data
     }
     return result;
 }

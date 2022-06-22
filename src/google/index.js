@@ -2,7 +2,8 @@ const fs = require('fs');
 const readline = require('readline');
 const inquirer = require('inquirer');
 const { google } = require('googleapis');
-const { status } = require('../helper');
+const printer = require('../printer');
+const { NOTIFY, QUES } = printer;
 const { saveFile } = require('../fileHandling');
 const { startServer, endServer } = require('../server');
 const langToLocale = require('./locale-to-lang.json');
@@ -19,15 +20,10 @@ _getClient = () => {
 /**
  * Create an OAuth2 client with the given credentials, and return the auth client.
  */
-function authorize(config) {
-    if (!config.path) {
-        console.log(status("error") + " Configuration issue, path not found.");
-        return false;
-    }
+function authorize(token) {
     const {client_secret, client_id, redirect_uris} = credentials;
     const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
-    const token = fs.readFileSync(`${config.path}/i18n_token.json`);
-    oAuth2Client.setCredentials(JSON.parse(token));
+    oAuth2Client.setCredentials(token);
     return oAuth2Client;
 }
 
@@ -41,10 +37,10 @@ async function getNewToken(tokenPath) {
         access_type: 'offline',
         scope: SCOPES,
     });
-    console.log(status("info") + ' Authorize google-sheet-i18n-to-json by visiting the following URL. Then copy and paste the code below:')
-    console.log(status("url") + " " + authUrl);
+    printer.inform(NOTIFY.token_auth_request);
+    printer.url(authUrl);
     
-    await _readCode(oAuth2Client, tokenPath);
+    return await _readCode(oAuth2Client, tokenPath);
 }
 
 /**
@@ -55,7 +51,7 @@ async function getNewToken(tokenPath) {
 async function _readCode(oAuth2Client, tokenPath) {
     const code = await inquirer.prompt({
         name: 'value',
-        message: (status("question") + " Please enter the code from that page here: "),
+        message: printer.question(QUES.token_auth_request),
         type: 'input'
     });
     try {
@@ -65,12 +61,13 @@ async function _readCode(oAuth2Client, tokenPath) {
         saveFile({
             path: `${ tokenPath }/i18n_token.json`,
             data: JSON.stringify(token.tokens, null, 4),
-            message: `Token successfully saved to i18n_token.json.`
+            message: `Token successfully saved to ${ tokenPath }/i18n_token.json.`
         });
         endServer();
+        return token;
     } catch(err) {
-        console.error(status("error") + ' Error while trying to retrieve access token.', `Recieved: [${err.code || '-1'}] ${err.response?.data?.error_description || err}`);
-        console.error(status("error") + ' Please try to input the code again.');
+        printer.error(NOTIFY.token_auth_failed, { "%CODE%": err.code || '-1', "%MSG%": err.response?.data?.error_description || err });
+        printer.error(NOTIFY.token_auth_retry);
         return _readCode(oAuth2Client, tokenPath);
     }
 }
@@ -80,8 +77,8 @@ async function _readCode(oAuth2Client, tokenPath) {
  * @param {string} title title of spreadsheet
  * @param {object} config configurations as specified or from config file
  */
-async function createSpreadsheet(title, sheetTitle, config) {
-    const auth = authorize(config);
+async function createSpreadsheet(title, sheetTitle, token) {
+    const auth = authorize(token);
     if (!auth) return;
 
     const service = google.sheets({version: 'v4', auth});
@@ -110,13 +107,13 @@ async function createSpreadsheet(title, sheetTitle, config) {
 
         return spreadsheet.data;
     } catch (err) {
-        console.log(status('error') + " Creating spreadsheet returned with the following error message: " + `[${err.code || -1 }] ${err.errors ? err.errors[0]?.message : err}`);
+        printer.error(NOTIFY.spreadsheet_create_failed, { "%CODE%": err.code || '-1', "%MSG%": err.errors ? err.errors[0]?.message : err })
         return false;
     }
 }
 
-async function initializeSpreadsheetInfo(spreadsheet, config) {
-    const auth = authorize(config);
+async function initializeSpreadsheetInfo(config, token) {
+    const auth = authorize(token);
     if (!auth) return;
 
     const service = google.sheets({ version: 'v4', auth });
@@ -129,7 +126,7 @@ async function initializeSpreadsheetInfo(spreadsheet, config) {
 
     try {
         await service.spreadsheets.values.update({
-            spreadsheetId: spreadsheet.spreadsheetId,
+            spreadsheetId: config.spreadsheetId,
             range: `${config.sheetName}!A1:${String.fromCharCode(config.languages.length+65)}${config.languages.length+2}`,
             valueInputOption: 'RAW',
             includeValuesInResponse: false,
@@ -137,7 +134,7 @@ async function initializeSpreadsheetInfo(spreadsheet, config) {
         });
         return true;
     } catch (err) {
-        console.log(status('error') + " Initializing spreadsheet format returned with the following error message: " + `[${err.code}] ${err.errors[0]?.message}`);
+        printer.error(NOTIFY.spreadsheet_init_failed, { "%CODE%": err.code || '-1', "%MSG%": err.errors ? err.errors[0]?.message : err });
         return false;
     }
 }
@@ -146,15 +143,15 @@ function spreadSheetURL(spreadsheetId) {
     return `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit#gid=0`;
 }
 
-async function getData(config) {
-    const auth = authorize(config);
+async function getData(config, token) {
+    const auth = authorize(token);
     if (!auth) return;
 
     const service = google.sheets({ version: 'v4', auth });
 
     try {
         const res = await service.spreadsheets.values.get({
-            spreadsheetId: config.spreadSheetId,
+            spreadsheetId: config.spreadsheetId,
             range: `${config.sheetName}!A:${String.fromCharCode(config.languages.length+65)}`,
         });
         
@@ -174,11 +171,11 @@ async function getData(config) {
                 extractLang(resultJson, lang, config);
             });
         } else {
-            console.log(status('warn') + ' No data found.');
+            printer.warn(NOTIFY.spreadsheet_no_data);
         }
-        
+        return true;
     } catch (err) {
-        console.log(status('error') + " Fetching spreadsheet data returned with the following error message: " + `[${err.code || '-1'}] ${err.errors ? err.errors[0]?.message : err}`);
+        printer.error(NOTIFY.spreadsheet_fetch_failed, { "%CODE%": err.code || '-1', "%MSG%": err.errors ? err.errors[0]?.message : err });
         return false;
     }
 }
