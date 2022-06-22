@@ -21,10 +21,4 @@ const tokenDate = () => {
 exports.command = 'token-date';
 exports.desc = 'Displays the date of when the current token was created.';
 exports.builder = {};
-exports.handler = (argv) => {
-    tokenDate();
-}
-
-// module.exports = {
-//     tokenDate
-// }
+exports.handler = (argv) => tokenDate();

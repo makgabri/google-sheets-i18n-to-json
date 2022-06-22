@@ -16,6 +16,7 @@ const authorize = async () => {
     await getNewToken(config.data.path);
 }
 
-module.exports = {
-    authorize
-}
+exports.command = 'authorize';
+exports.desc = 'This is not a pre-requisite when running init as init will automatically run this. Run this if you have lost the file, or want to regenerate your token.\n';
+exports.builder = {};
+exports.handler = (argv) => authorize();

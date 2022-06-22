@@ -17,6 +17,7 @@ const update = async () => {
     if (result) printer.inform(printer.NOTIFY.update_success + '\n');
 }
 
-module.exports = {
-    update
-}
+exports.command = 'update';
+exports.desc = 'After setup, run this to update the corresponding i18n json files.\n';
+exports.builder = {};
+exports.handler = (argv) => update();

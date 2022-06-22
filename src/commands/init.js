@@ -194,6 +194,7 @@ const init = async () => {
     printer.url(spreadSheetURL(config.spreadsheetId));
 }
 
-module.exports = {
-    init
-}
+exports.command = 'init';
+exports.desc = 'Initializes the configurations after answering several questions in a file named i18n_config.json. Command will also require writing permissions from google. This requires a token to be stored in i18n_token.json. Prior to running, we will ensure that this file is ignored in .gitignore.\n';
+exports.builder = {};
+exports.handler = (argv) => init(); // TODO: LOOK INTO --force option
