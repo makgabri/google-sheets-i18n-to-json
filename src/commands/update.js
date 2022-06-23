@@ -1,6 +1,7 @@
 const { checkConfig, checkToken } = require('../fileHandling');
 const { getData } = require('../google');
 const printer = require('../printer');
+const { NOTIFY } = printer;
 
 const update = async () => {
     printer.printWelcome();
@@ -14,7 +15,7 @@ const update = async () => {
     if (!token.valid) return printer.error(NOTIFY.token_malformed);
 
     const result = await getData(config.data, token.data);
-    if (result) printer.inform(printer.NOTIFY.update_success + '\n');
+    if (result) printer.inform(NOTIFY.update_success + '\n');
 }
 
 exports.command = 'update';

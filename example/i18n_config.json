@@ -3,8 +3,9 @@
     "languages": [
         "en-US",
         "zh-CN",
-        "zh-TW"
+        "zh-TW",
+        "fr-FR"
     ],
-    "spreadsheetId": "1oeqSV85u3fE7NYldRVMHQdeHcbWvISdwIQm5etE9nqE",
-    "sheetName": "app"
+    "spreadsheetId": "1Uy3v1P-t_6MBjbKVJNq1fVHo2iNz1-VhT8mCdWP_-j0",
+    "sheetName": "web"
 }

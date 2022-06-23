@@ -1,5 +1,3 @@
-const fs = require('fs');
-const readline = require('readline');
 const inquirer = require('inquirer');
 const { google } = require('googleapis');
 const printer = require('../printer');
@@ -19,6 +17,7 @@ _getClient = () => {
 
 /**
  * Create an OAuth2 client with the given credentials, and return the auth client.
+ * @param {import('../fileHandling').Token} token - token contents to authorize
  */
 function authorize(token) {
     const {client_secret, client_id, redirect_uris} = credentials;
@@ -29,6 +28,7 @@ function authorize(token) {
 
 /**
  * Get and store new token after prompting for user authorization.
+ * @param {string} tokenPath - path of new token to be stored at
  */
 async function getNewToken(tokenPath) {
     startServer();
@@ -64,7 +64,7 @@ async function _readCode(oAuth2Client, tokenPath) {
             message: `Token successfully saved to ${ tokenPath }/i18n_token.json.`
         });
         endServer();
-        return token;
+        return token.tokens;
     } catch(err) {
         printer.error(NOTIFY.token_auth_failed, { "%CODE%": err.code || '-1', "%MSG%": err.response?.data?.error_description || err });
         printer.error(NOTIFY.token_auth_retry);
@@ -183,7 +183,7 @@ async function getData(config, token) {
 function extractLang(jsonData, lang, config) {
     let langData = {};
     Object.keys(jsonData).forEach((keyword) => {
-        langData[keyword] = jsonData[keyword][lang];
+        langData[keyword] = jsonData[keyword][lang] || "";
     });
     saveFile({
         path: `${config.path}/${lang}.json`,
@@ -192,10 +192,131 @@ function extractLang(jsonData, lang, config) {
     });
 }
 
+/**
+ * Given a range, returns the data of the range in the spreadsheet
+ * @param {string} range - range of spreadsheet to return
+ * @param {import('../fileHandling').Config} config - config contents
+ * @param {import('../fileHandling').Token} token  - token contents
+ * @returns {String[][]} A 2D array of the spreadsheet
+ */
+async function getRange(range, config, token) {
+    const auth = authorize(token);
+    if (!auth) return;
+
+    const service = google.sheets({ version: 'v4', auth });
+
+    try {
+        const res = await service.spreadsheets.values.get({
+            spreadsheetId: config.spreadsheetId,
+            range: `${config.sheetName}!${range}`,
+        });
+
+        return res.data;
+    } catch (err) {
+        printer.error(NOTIFY.spreadsheet_fetch_failed, { "%CODE%": err.code || '-1', "%MSG%": err.errors ? err.errors[0]?.message : err });
+        return [];
+    }
+}
+
+/**
+ * Appends to spreadsheet the values into the specified range
+ * @param {string[][]} values - values to add
+ * @param {string} range - range to add values
+ * @param {import('../fileHandling').Config} config - config contents
+ * @param {import('../fileHandling').Token} token - token contents
+ * @returns whether appending is successful
+ */
+async function append(values, range, config, token) {
+    const auth = authorize(token);
+    if (!auth) return;
+
+    const service = google.sheets({ version: 'v4', auth });
+
+    try {
+        const res = await service.spreadsheets.values.append({
+            spreadsheetId: config.spreadsheetId,
+            range: `${config.sheetName}!${range}`,
+            valueInputOption: 'RAW',
+            resource: { values },
+        });
+
+        return true;
+    } catch (err) {
+        printer.error(NOTIFY.spreadsheet_append_failed, { "%CODE%": err.code || '-1', "%MSG%": err.errors ? err.errors[0]?.message : err });
+        return false;
+    }
+}
+
+/**
+ * Updates to spreadsheet the values into the specified range
+ * @param {string[][]} values - values to add
+ * @param {string} range - range to add values
+ * @param {import('../fileHandling').Config} config - config contents
+ * @param {import('../fileHandling').Token} token - token contents
+ * @returns whether update is successful
+ */
+async function update(values, range, config, token) {
+    const auth = authorize(token);
+    if (!auth) return;
+
+    const service = google.sheets({ version: 'v4', auth });
+
+    try {
+        const res = await service.spreadsheets.values.update({
+            spreadsheetId: config.spreadsheetId,
+            range: `${config.sheetName}!${range}`,
+            valueInputOption: 'RAW',
+            resource: { values },
+        });
+
+        return true;
+    } catch (err) {
+        printer.error(NOTIFY.spreadsheet_append_failed, { "%CODE%": err.code || '-1', "%MSG%": err.errors ? err.errors[0]?.message : err });
+        return false;
+    }
+}
+
+/**
+ * Updates to spreadsheet the values into the specified range
+ * @typedef {Object} SheetUpdate
+ * @property {string} range - range of values to update
+ * @property {string[][]} values - 2D array of values to update
+ * 
+ * @param {SheetUpdate[]} data - an array of update objects
+ * @param {import('../fileHandling').Config} config - config contents
+ * @param {import('../fileHandling').Token} token - token contents
+ * @returns whether batch update is successful
+ */
+ async function batchUpdate(data, config, token) {
+    const auth = authorize(token);
+    if (!auth) return;
+
+    const service = google.sheets({ version: 'v4', auth });
+
+    try {
+        const res = await service.spreadsheets.values.update({
+            spreadsheetId: config.spreadsheetId,
+            resource: { 
+                valueInputOption: 'RAW',
+                data
+            },
+        });
+
+        return true;
+    } catch (err) {
+        printer.error(NOTIFY.spreadsheet_append_failed, { "%CODE%": err.code || '-1', "%MSG%": err.errors ? err.errors[0]?.message : err });
+        return false;
+    }
+}
+
 module.exports = {
     getNewToken,
     createSpreadsheet,
     initializeSpreadsheetInfo,
     spreadSheetURL,
-    getData
+    getData,
+    getRange,
+    append,
+    update,
+    batchUpdate
 }
