@@ -192,6 +192,7 @@ const init = async () => {
 
     printer.inform(NOTIFY.spreadsheet_url_click);
     printer.url(spreadSheetURL(config.spreadsheetId));
+    console.log("");
 }
 
 exports.command = 'init';

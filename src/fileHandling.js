@@ -9,28 +9,69 @@ const { status } = require('./printer');
  */
 
 /**
+ * Checks existance of file
+ * @param {string} path - path of file to check
+ * @returns {boolean} whether the path exists and true only if it is not a directory
+ */
+const fileExists = (path) => {
+    const exists = fs.existsSync(path);
+    if (exists) {
+        const stats = fs.statSync(path);
+        if (stats.isDirectory()) {
+            return false;
+        } else {
+            return true;
+        }
+    } else {
+        return false;
+    }
+}
+
+/**
  * Saves file
  * @param {FileBundle} file - data regarding file to save
+ * @return {boolean} whether save success
  */
 const saveFile = ({path, data, message}) => {
     try {
         fs.writeFileSync(path, data);
         console.log(status("info") + " " + message);
+        return true;
     } catch (err) {
         console.log(status('error') + " " + `Trying to save file (${path}) but got: ${err}`);
+        return false;
     }
 }
 
 /**
  * Appends to file
  * @param {FileBundle} file - data regarding file to append
+ * @return {boolean} whether append success
  */
 const appendFile = ({path, data, message}) => {
     try {
         fs.appendFileSync(path, data);
         console.log(status("info") + " " + message);
+        return true;
     } catch (err) {
         console.log(status('error') + " " + `Trying to append to file (${path}) but got: ${err}`);
+        return false;
+    }
+}
+
+/**
+ * Deletes a file
+ * @param {FileBundle} file - data regarding file to delete
+ * @return {boolean} whether delete success
+ */
+const deleteFile = ({ path, message }) => {
+    try {
+        fs.unlinkSync(path);
+        console.log(status("info") + " " + message);
+        return true;
+    } catch (err) {
+        console.log(status('error') + " " + `Trying to delete file (${path}) but got: ${err}`);
+        return false;
     }
 }
 
@@ -151,8 +192,10 @@ const checkToken = (location) => {
 }
 
 module.exports = {
+    fileExists,
     saveFile,
     appendFile,
+    deleteFile,
     checkGitignore,
     checkConfig,
     checkToken

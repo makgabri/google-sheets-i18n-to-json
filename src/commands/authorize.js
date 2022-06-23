@@ -14,6 +14,8 @@ const authorize = async () => {
     if (token.hasToken) printer.warn(NOTIFY.token_overwrite, { '%DATE%': token.data?.createdOn ? ` (Created On ${token.data.createdOn})` : '' });
 
     await getNewToken(config.data.path);
+    printer.success(NOTIFY.success_add_token);
+    console.log("");
 }
 
 exports.command = 'authorize';

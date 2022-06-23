@@ -15,7 +15,8 @@ const update = async () => {
     if (!token.valid) return printer.error(NOTIFY.token_malformed);
 
     const result = await getData(config.data, token.data);
-    if (result) printer.inform(NOTIFY.update_success + '\n');
+    if (result) printer.success(NOTIFY.update_success + '\n');
+    console.log("");
 }
 
 exports.command = 'update';

@@ -8,11 +8,14 @@ const printWelcome = () => {
 }
 
 /**
- * @param {('info'|'warn'|'error'|'url'|'question')} type - type of status
+ * @param {('info'|'warn'|'error'|'url'|'question'|'success')} type - type of status
  * @returns A generated pre-pending tag for the console to indicate type of message
  */
 const status = (type) => {
     switch (type) {
+        case "success":
+            return (chalk.blue('[') + chalk.green('SUCCESS') + chalk.blue(']'));
+
         case "info":
             return (chalk.blue('[') + chalk.cyan('INFO') + chalk.blue(']'));
 
@@ -53,6 +56,16 @@ const _parseMessage = (msg, dict) => {
         newMsg = newMsg.replace(key, dict[key]);
     });
     return newMsg;
+}
+
+/**
+ * Informs a success message on the console
+ * @param {string} msg - message to display
+ * @param {object} dict - any replaceables in the msg
+ */
+const success = (msg, dict) => {
+    let newMsg = dict ? _parseMessage(msg, dict) : msg;
+    console.log(status('success') + " " + newMsg);
 }
 
 /**
@@ -107,7 +120,7 @@ const NOTIFY = {
     gitignore_check_exists: 'Checking if .gitignore exists and ensuring i18n_token.json is in it.',
     gitignore_DNE: '.gitignore does not exists. Create one or check if this is a git repo.',
     gitignore_update: 'Updated .gitignore to include i18n_token.json.',
-    config_exists: 'i18n_config.json exists. Delete file to init, edit file directly or add --force before init to execute this command.',
+    config_exists: 'i18n_config.json exists. getNewTokenDelete file to init, edit file directly or add --force before init to execute this command.',
     config_check_exists: 'Checking if i18n_config.json exists.',
     config_DNE: "Config not found. Please run 'google-sheet-i18n-to-json init' first or make sure that i18n_config.json is at the root of the directory.",
     config_malformed: "Config found but malformed. Please run 'google-sheet-i18n-to-json init' and the process will allowed to be run due to malformation.",
@@ -132,7 +145,14 @@ const NOTIFY = {
     spreadsheet_fetch_failed: "Error while fetching from spreasdsheet. Recieved: [%CODE%] %MSG%",
     spreadsheet_append_failed: "Error while appending to spreasdsheet. Recieved: [%CODE%] %MSG%",
     spreadsheet_lang_exists: "Checking languages in sheets and found that the following exist: %LANGS%",
-    update_success: "Successfully pulled the new json objects."
+    spreadsheet_lang_DNE: "Checking languages in sheets and could not find the following exist: %LANGS%",
+    spreadsheet_backup_success: "Saving backup before modifying success. Backup stored at %PATH%.",
+    spreadsheet_backup_remove_success: "Removing backup after modifying i18n success",
+    update_success: "Successfully pulled the new json objects.",
+    success_add_lang: "Successfully update google sheets and config to include the following languages: %LANGS%",
+    success_delete_lang: "Successfully update google sheets and config to not include the following languages: %LANGS%",
+    success_delete_lang_json: "Successfully delete %LANG%.json.",
+    success_add_token: "Successfully updated token."
 }
 
 const QUES = {
@@ -142,6 +162,9 @@ const QUES = {
     config_path_select: 'Please select a directory(Current directory is %PATH%): ',
     config_languages: 'Please selected the languages you would like to create i18n json objects(You can always add custom language keys after): ',
     config_add_lang_exists: 'The configuration file seems to include: %LANGS%. Do you wish to proceed to initialize columns in google sheets?',
+    config_some_lang_DNE: "The following languages do not exist in the config: %LANGS%. Do you wish to proceed?",
+    config_lang_DNE: "Error indexing languages. None of them exist in the config file.",
+    config_lang_confirm_delete: "Are you sure you want to delete the following languages: %LANGS% ?",
     token_malformed: 'i18n_token.json seems to be malformed, do you wish to reconfigure: ',
     token_auth_request: 'Please enter the code from that page here:',
     spreadsheet_name: 'Please type in the name of the spreadsheet you would like: ',
@@ -152,6 +175,7 @@ module.exports = {
     printWelcome,
     status,
     underline,
+    success,
     inform,
     warn,
     error,

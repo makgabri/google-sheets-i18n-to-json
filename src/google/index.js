@@ -74,8 +74,9 @@ async function _readCode(oAuth2Client, tokenPath) {
 
 /**
  * Creates the spreadsheet for i18n
- * @param {string} title title of spreadsheet
- * @param {object} config configurations as specified or from config file
+ * @param {string} title - title of spreadsheet
+ * @param {string} sheetTitle - title of sheet
+ * @param {import('../fileHandling').Token} token - token data
  */
 async function createSpreadsheet(title, sheetTitle, token) {
     const auth = authorize(token);
@@ -112,6 +113,11 @@ async function createSpreadsheet(title, sheetTitle, token) {
     }
 }
 
+/**
+ * Initializes the spreadsheet for i18n
+ * @param {import('../fileHandling').Config} config - config data
+ * @param {import('../fileHandling').Token} token - token data
+ */
 async function initializeSpreadsheetInfo(config, token) {
     const auth = authorize(token);
     if (!auth) return;
@@ -139,10 +145,21 @@ async function initializeSpreadsheetInfo(config, token) {
     }
 }
 
+/**
+ * Creates the spreadsheet for i18n
+ * @param {string} spreadsheetId - the id of the spreadsheet
+ * @return {string} the link to edit the spreadsheet
+ */
 function spreadSheetURL(spreadsheetId) {
     return `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit#gid=0`;
 }
 
+/**
+ * Retrieves the I18N sheet and extracts the json objects
+ * @param {import('../fileHandling').Config} config - config contents
+ * @param {import('../fileHandling').Token} token  - token contents
+ * @returns {boolean} Indicating whether the extraction was a success
+ */
 async function getData(config, token) {
     const auth = authorize(token);
     if (!auth) return;
@@ -209,6 +226,31 @@ async function getRange(range, config, token) {
         const res = await service.spreadsheets.values.get({
             spreadsheetId: config.spreadsheetId,
             range: `${config.sheetName}!${range}`,
+        });
+
+        return res.data;
+    } catch (err) {
+        printer.error(NOTIFY.spreadsheet_fetch_failed, { "%CODE%": err.code || '-1', "%MSG%": err.errors ? err.errors[0]?.message : err });
+        return [];
+    }
+}
+
+/**
+ * Returns all the data of the sheet in the spreadsheet
+ * @param {import('../fileHandling').Config} config - config contents
+ * @param {import('../fileHandling').Token} token  - token contents
+ * @returns {String[][]} A 2D array of the spreadsheet
+ */
+async function readAllData(config, token) {
+    const auth = authorize(token);
+    if (!auth) return;
+
+    const service = google.sheets({ version: 'v4', auth });
+
+    try {
+        const res = await service.spreadsheets.values.get({
+            spreadsheetId: config.spreadsheetId,
+            range: `${config.sheetName}`,
         });
 
         return res.data;
@@ -287,18 +329,47 @@ async function update(values, range, config, token) {
  * @param {import('../fileHandling').Token} token - token contents
  * @returns whether batch update is successful
  */
- async function batchUpdate(data, config, token) {
+async function batchUpdate(data, config, token) {
     const auth = authorize(token);
     if (!auth) return;
 
     const service = google.sheets({ version: 'v4', auth });
 
     try {
-        const res = await service.spreadsheets.values.update({
+        const res = await service.spreadsheets.values.batchUpdate({
             spreadsheetId: config.spreadsheetId,
             resource: { 
                 valueInputOption: 'RAW',
                 data
+            },
+        });
+
+        return true;
+    } catch (err) {
+        printer.error(NOTIFY.spreadsheet_append_failed, { "%CODE%": err.code || '-1', "%MSG%": err.errors ? err.errors[0]?.message : err });
+        return false;
+    }
+}
+
+/**
+ * Batch clear spreadsheet by the specified range
+ * 
+ * @param {string[]} ranges - an array of ranges
+ * @param {import('../fileHandling').Config} config - config contents
+ * @param {import('../fileHandling').Token} token - token contents
+ * @returns whether the clear was successful
+ */
+ async function batchClear(ranges, config, token) {
+    const auth = authorize(token);
+    if (!auth) return;
+
+    const service = google.sheets({ version: 'v4', auth });
+
+    try {
+        const res = await service.spreadsheets.values.batchClear({
+            spreadsheetId: config.spreadsheetId,
+            resource: { 
+                ranges
             },
         });
 
@@ -316,7 +387,9 @@ module.exports = {
     spreadSheetURL,
     getData,
     getRange,
+    readAllData,
     append,
     update,
-    batchUpdate
+    batchUpdate,
+    batchClear
 }

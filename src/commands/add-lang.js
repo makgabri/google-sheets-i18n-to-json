@@ -39,16 +39,19 @@ const addLang = async (argv) => {
     let updateResult = await update([languages], range, config.data, token.data);
     if (!updateResult) return;
 
-    saveFile({
+    const saveConfigResult = saveFile({
         path: 'i18n_config.json',
         data: JSON.stringify(newConfig, null, 4),
         message: printer.NOTIFY.config_update_success
     });
+    if (saveConfigResult) printer.success(NOTIFY.success_add_lang, { "%LANGS%": JSON.stringify(languages) });
+    console.log("");
 }
 
 
 exports.command = 'add-lang';
 exports.desc = 'Adds a language to the configuration and generates the first column in google sheets.\n';
+exports.example = 'hello'
 exports.builder = {
     lang: {
         describe: 'key of new lang',

@@ -1,10 +1,11 @@
 {
     "path": "./src/i18n",
     "languages": [
-        "en-US",
         "zh-CN",
-        "zh-TW",
-        "fr-FR"
+        "abc",
+        "cde",
+        "fff",
+        "kkk"
     ],
     "spreadsheetId": "1Uy3v1P-t_6MBjbKVJNq1fVHo2iNz1-VhT8mCdWP_-j0",
     "sheetName": "web"
