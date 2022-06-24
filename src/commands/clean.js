@@ -1,22 +1,61 @@
-const { checkConfig, checkToken, deleteFile } = require('../fileHandling');
+const inquirer = require('inquirer');
+const { checkConfig, checkToken, deleteFile, fileExists } = require('../fileHandling');
 const printer = require('../printer')
-const { NOTIFY } = printer;
+const { NOTIFY, QUES } = printer;
 // const { getNewToken } = require('../google/index');
 
 const clean = async (argv) => {
     printer.printWelcome();
 
     const config = checkConfig();
-    // if (config.hasConfig) deleteFile()
+    if (!config.hasConfig) return printer.error(NOTIFY.config_DNE);
+    if (!config.valid) return printer.error(NOTIFY.config_malformed);
 
     const token = checkToken(config.data.path);
+    if (!token.hasToken) printer.warn(NOTIFY.clean_file_DNE.replace("%TYPE%", "Token"));
     if (token.hasToken) deleteFile({
         path: `${config.data.path}/i18n_token.json`,
-        message: //TODO here
+        message: NOTIFY.clean_file_found
+            .replace("%TYPE%", "Token")
+            .replace("%PATH%", `${config.data.path}/i18n_token.json`)
+    });
+
+    config.data.languages.forEach(lang => {
+        if (fileExists(`${config.data.path}/${lang}.json`)) {
+            deleteFile({
+                path: `${config.data.path}/${lang}.json`,
+                message: NOTIFY.clean_file_found
+                    .replace("%TYPE%", `${lang} JSON`)
+                    .replace("%PATH%", `${config.data.path}/${lang}.json`)
+            });
+        } else {
+            printer.warn(NOTIFY.clean_file_DNE.replace("%TYPE%", `${lang} JSON`));
+        }
     })
 
-    // printer.success(NOTIFY.success_add_token);
-    // console.log("");
+    if (argv.config) {
+        const confirm = await inquirer.prompt({
+            name: 'value',
+            message: printer.question(QUES.clean_remove_config),
+            type: 'confirm'
+        });
+        if (confirm.value) {
+            if (fileExists('i18n_config.json')) {
+                deleteFile({
+                    path: `i18n_config.json`,
+                    message: NOTIFY.clean_file_found
+                        .replace("%TYPE%", `Config`)
+                        .replace("%PATH%", `i18n_config.json`)
+                });
+            } else {
+                printer.error(NOTIFY.clean_file_DNE.replace("%TYPE%", `Config`));
+            }
+        }
+    }
+
+    printer.success(NOTIFY.success_clean);
+    printer.inform(NOTIFY.clean_delete_spreadsheet);
+    console.log("");
 }
 
 exports.command = 'clean';

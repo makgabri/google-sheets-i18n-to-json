@@ -13,7 +13,10 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "bin": "cli.js",
+  "bin": {
+    "google-sheet-i18n-to-json": "cli.js",
+    "gs-i18n-json": "cli.js"
+  },
   "bugs": {
     "url": "https://github.com/makgabri/google-sheet-i18n-to-json/issues"
   },
@@ -24,6 +27,7 @@
     "googleapis": "^103.0.0",
     "i18n-locales": "0.0.5",
     "inquirer": "^8.2.4",
+    "supports-hyperlinks": "^2.2.0",
     "yargs": "^17.5.1"
   }
 }

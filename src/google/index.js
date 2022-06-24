@@ -1,7 +1,7 @@
 const inquirer = require('inquirer');
-const { google } = require('googleapis');
+const { google, sheets_v4 } = require('googleapis');
 const printer = require('../printer');
-const { NOTIFY, QUES } = printer;
+const { NOTIFY, QUES, TAGS } = printer;
 const { saveFile } = require('../fileHandling');
 const { startServer, endServer } = require('../server');
 const langToLocale = require('./locale-to-lang.json');
@@ -38,7 +38,7 @@ async function getNewToken(tokenPath) {
         scope: SCOPES,
     });
     printer.inform(NOTIFY.token_auth_request);
-    printer.url(authUrl);
+    printer.url(TAGS.authentication_url, authUrl);
     
     return await _readCode(oAuth2Client, tokenPath);
 }
@@ -155,6 +155,30 @@ function spreadSheetURL(spreadsheetId) {
 }
 
 /**
+ * Retrieves the whole spreadsheet
+ * @param {string} id - the id of the spreadsheet
+ * @param {import('../fileHandling').Config} config - config contents
+ * @param {import('../fileHandling').Token} token - token contents
+ * @returns {sheets_v4.Schema$Spreadsheet|false} The google sheet if found, otherwise false
+ */
+async function getSpreadsheet(id, token) {
+    const auth = authorize(token);
+    if (!auth) return;
+
+    const service = google.sheets({ version: 'v4', auth });
+
+    try {
+        const res = await service.spreadsheets.get({
+            spreadsheetId: id
+        });
+        return res.data;
+    } catch (err) {
+        printer.error(NOTIFY.spreadsheet_fetch_failed, { "%CODE%": err.code || '-1', "%MSG%": err.errors ? err.errors[0]?.message : err });
+        return false;
+    }
+}
+
+/**
  * Retrieves the I18N sheet and extracts the json objects
  * @param {import('../fileHandling').Config} config - config contents
  * @param {import('../fileHandling').Token} token  - token contents
@@ -266,7 +290,7 @@ async function readAllData(config, token) {
  * @param {string} range - range to add values
  * @param {import('../fileHandling').Config} config - config contents
  * @param {import('../fileHandling').Token} token - token contents
- * @returns whether appending is successful
+ * @returns {boolean} whether appending is successful
  */
 async function append(values, range, config, token) {
     const auth = authorize(token);
@@ -290,12 +314,42 @@ async function append(values, range, config, token) {
 }
 
 /**
+ * Creates a new sheet in spreadsheet
+ * @param {string} sheetName - Name of sheet
+ * @param {import('../fileHandling').Config} config - config contents
+ * @param {import('../fileHandling').Token} token - token contents
+ * @returns {boolean} whether creation is successful
+ */
+async function createSheet(sheetName, config, token) {
+    const auth = authorize(token);
+    if (!auth) return;
+
+    const service = google.sheets({ version: 'v4', auth });
+    const requests = [{
+        addSheet: { properties: { title: sheetName }}
+    }];
+
+    try { service.spreadsheets.sheets
+        const res = await service.spreadsheets.batchUpdate({
+            spreadsheetId: config.spreadsheetId,
+            resource: { requests },
+        });
+
+        return true;
+    } catch (err) {
+        printer.error(NOTIFY.spreadsheet_append_failed, { "%CODE%": err.code || '-1', "%MSG%": err.errors ? err.errors[0]?.message : err });
+        return false;
+    }
+}
+
+
+/**
  * Updates to spreadsheet the values into the specified range
  * @param {string[][]} values - values to add
  * @param {string} range - range to add values
  * @param {import('../fileHandling').Config} config - config contents
  * @param {import('../fileHandling').Token} token - token contents
- * @returns whether update is successful
+ * @returns {boolean} whether update is successful
  */
 async function update(values, range, config, token) {
     const auth = authorize(token);
@@ -327,7 +381,7 @@ async function update(values, range, config, token) {
  * @param {SheetUpdate[]} data - an array of update objects
  * @param {import('../fileHandling').Config} config - config contents
  * @param {import('../fileHandling').Token} token - token contents
- * @returns whether batch update is successful
+ * @returns {boolean} whether batch update is successful
  */
 async function batchUpdate(data, config, token) {
     const auth = authorize(token);
@@ -357,9 +411,9 @@ async function batchUpdate(data, config, token) {
  * @param {string[]} ranges - an array of ranges
  * @param {import('../fileHandling').Config} config - config contents
  * @param {import('../fileHandling').Token} token - token contents
- * @returns whether the clear was successful
+ * @returns {boolean} whether the clear was successful
  */
- async function batchClear(ranges, config, token) {
+async function batchClear(ranges, config, token) {
     const auth = authorize(token);
     if (!auth) return;
 
@@ -384,7 +438,9 @@ module.exports = {
     getNewToken,
     createSpreadsheet,
     initializeSpreadsheetInfo,
+    createSheet,
     spreadSheetURL,
+    getSpreadsheet,
     getData,
     getRange,
     readAllData,

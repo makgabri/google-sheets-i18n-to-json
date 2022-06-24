@@ -1,8 +1,8 @@
 const { checkConfig, checkToken, saveFile } = require('../fileHandling');
-const { getRange, update } = require('../google');
+const { getRange, update, spreadSheetURL } = require('../google');
 const inquirer = require('inquirer');
 const printer = require('../printer');
-const { NOTIFY, QUES } = printer;
+const { NOTIFY, QUES, TAGS } = printer;
 
 const addLang = async (argv) => {
     printer.printWelcome();
@@ -45,6 +45,8 @@ const addLang = async (argv) => {
         message: printer.NOTIFY.config_update_success
     });
     if (saveConfigResult) printer.success(NOTIFY.success_add_lang, { "%LANGS%": JSON.stringify(languages) });
+    printer.inform(NOTIFY.spreadsheet_url_click);
+    printer.url(TAGS.spreadsheet_url, spreadSheetURL(config.data.spreadsheetId));
     console.log("");
 }
 
