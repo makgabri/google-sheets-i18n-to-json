@@ -1,0 +1,39 @@
+.big-box{
+    width: 80%;
+    border-radius: 0.8rem;
+    background-color: var(--primary-orange);
+    padding: 1rem 2rem 1rem 2rem;
+    align-items: flex-start;
+}
+
+.home{
+    height: 100%;
+    justify-content: space-evenly;
+}
+
+.feature-container{
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.feature-box{
+    min-width: 5rem;
+    max-width: 15rem;
+    margin-top: 2rem;
+    text-align: center;
+    padding-right: 1rem;
+    padding-left: 1rem;
+}
+
+.logo{
+    height: 5rem;
+    width: 5rem;
+}
+
+.google{
+    background-image: url('./google_sheets_logo.png');
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
