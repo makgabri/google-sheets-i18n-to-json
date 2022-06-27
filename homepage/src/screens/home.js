@@ -1,4 +1,4 @@
-import { AiFillGoogleCircle, AiOutlineKey } from "react-icons/ai";
+import { AiOutlineKey } from "react-icons/ai";
 import { BiCodeCurly } from 'react-icons/bi';
 
 function Home() {
@@ -26,7 +26,8 @@ function Home() {
             <div className="big-box flex-col-center">
                 <h2>Google Sheets I18N To JSON</h2>
                 <p className="text-light-gray">
-                    Managing different texts of different languages with different lengths can be a great hassle.
+                    The use of different languages in projects is very common. Managing them in one spreadsheet would be the easiest. Managing them on a service
+                    where all developers and clients could see would be the best. This 
                 </p>
             </div>
             <div className="flex-center feature-container">
