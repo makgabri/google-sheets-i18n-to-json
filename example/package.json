@@ -4,12 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "google-sheet-i18n-to-json"
+    "test": "google-sheet-i18ns-to-json"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "google-sheet-i18n-to-json": "file:.."
+    "google-sheets-i18n-to-json": "file:.."
   }
 }

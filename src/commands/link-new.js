@@ -2,7 +2,7 @@ const inquirer = require('inquirer');
 
 const { verifyGitIgnore, createConfig, createToken, writeConfig, retrieveSpreadsheet, randomString } = require('./helpers/initHelpers');
 
-const { getSpreadsheet, readAllData, getData, spreadSheetURL, createSheet, initializeSpreadsheetInfo } = require('../google');
+const { getData, spreadSheetURL, createSheet, initializeSpreadsheetInfo } = require('../google');
 const printer = require('../printer');
 const { NOTIFY, QUES, TAGS } = printer;
 

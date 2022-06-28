@@ -1,5 +1,5 @@
 const { checkConfig, checkToken, saveFile, deleteFile, fileExists } = require('../fileHandling');
-const { getRange, batchClear, readAllData, batchUpdate } = require('../google');
+const { batchClear, readAllData, batchUpdate } = require('../google');
 const inquirer = require('inquirer');
 const printer = require('../printer');
 const { NOTIFY, QUES } = printer;

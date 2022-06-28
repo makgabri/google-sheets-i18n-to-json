@@ -1,5 +1,5 @@
 {
-  "name": "google-sheet-i18n-to-json",
+  "name": "google-sheets-i18n-to-json",
   "version": "1.0.0",
   "description": "Assuming the template, will extract google sheets data to json files for I18N use.",
   "main": "index.js",
@@ -8,19 +8,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/makgabri/google-sheet-i18n-to-json.git"
+    "url": "git+https://github.com/makgabri/google-sheets-i18n-to-json.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bin": {
-    "google-sheet-i18n-to-json": "cli.js",
+    "google-sheets-i18n-to-json": "cli.js",
     "gs-i18n-json": "cli.js"
   },
   "bugs": {
-    "url": "https://github.com/makgabri/google-sheet-i18n-to-json/issues"
+    "url": "https://github.com/makgabri/google-sheets-i18n-to-json/issues"
   },
-  "homepage": "https://github.com/makgabri/google-sheet-i18n-to-json#readme",
+  "homepage": "https://github.com/makgabri/google-sheets-i18n-to-json#readme",
   "dependencies": {
     "chalk": "^4.1.2",
     "google-auth-library": "^8.0.2",
