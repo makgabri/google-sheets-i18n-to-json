@@ -10,8 +10,16 @@
     "type": "git",
     "url": "git+https://github.com/makgabri/google-sheets-i18n-to-json.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "Google Sheets",
+    "I18N",
+    "JSON",
+    "Google Sheets To JSON",
+    "Google Sheets I18N",
+    "Google Sheets I18N JSON",
+    "cli"
+  ],
+  "author": "Gabrian Mak",
   "license": "ISC",
   "bin": {
     "google-sheets-i18n-to-json": "cli.js",
@@ -20,7 +28,7 @@
   "bugs": {
     "url": "https://github.com/makgabri/google-sheets-i18n-to-json/issues"
   },
-  "homepage": "https://github.com/makgabri/google-sheets-i18n-to-json#readme",
+  "homepage": "https://google-sheets-i18n-to-json.netlify.app",
   "dependencies": {
     "chalk": "^4.1.2",
     "google-auth-library": "^8.0.2",

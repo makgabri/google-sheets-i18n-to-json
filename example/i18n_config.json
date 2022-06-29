@@ -1,0 +1,13 @@
+{
+    "path": "./src/i18n",
+    "languages": [
+        "en-US",
+        "es",
+        "fr-CA",
+        "zh-CN",
+        "zh-TW"
+    ],
+    "spreadsheetId": "1nNiEIvYTrCus6l22hCnfhBhl3IAi75e-E8uoC-4Mlv0",
+    "sheetName": "web",
+    "sheetId": 0
+}

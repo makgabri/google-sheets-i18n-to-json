@@ -1,0 +1,9 @@
+{
+    "en-US": "English (US)",
+    "es": "Español",
+    "fr-CA": "Français (Canada)",
+    "zh-CN": "中文（中国大陆）",
+    "zh-TW": "中文（台灣）",
+    "Hello": "Hello in en-US",
+    "Bye": "Bye in en-US"
+}
