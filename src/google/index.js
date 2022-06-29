@@ -3,7 +3,6 @@ const { google, sheets_v4 } = require('googleapis');
 const printer = require('../printer');
 const { NOTIFY, QUES, TAGS } = printer;
 const { saveFile } = require('../fileHandling');
-const { startServer, endServer } = require('../server');
 const langToLocale = require('./locale-to-lang.json');
 
 const credentials = require('./credentials.json');
@@ -31,7 +30,6 @@ function authorize(token) {
  * @param {string} tokenPath - path of new token to be stored at
  */
 async function getNewToken(tokenPath) {
-    startServer();
     const oAuth2Client = _getClient();
     const authUrl = oAuth2Client.generateAuthUrl({
         access_type: 'offline',
@@ -63,7 +61,6 @@ async function _readCode(oAuth2Client, tokenPath) {
             data: JSON.stringify(token.tokens, null, 4),
             message: `Token successfully saved to ${ tokenPath }/i18n_token.json.`
         });
-        endServer();
         return token.tokens;
     } catch(err) {
         printer.error(NOTIFY.token_auth_failed, { "%CODE%": err.code || '-1', "%MSG%": err.response?.data?.error_description || err });
@@ -100,6 +97,21 @@ async function createSpreadsheet(title, sheetTitle, token) {
                             title: sheetTitle,
                         },
                         fields: 'title',
+                    }
+                },
+                {
+                    addProtectedRange: {
+                        protectedRange: {
+                            range: {
+                                sheetId: spreadsheet.data.sheets[0]?.properties.sheetId,
+                                startRowIndex: 0,
+                                endRowIndex: 1,
+                                startColumnIndex: 0,
+                                endColumnIndex: 10000,
+                            },
+                            description: "Protecting language row",
+                            warningOnly: true
+                        }
                     }
                 }
             ]}
@@ -329,11 +341,36 @@ async function createSheet(sheetName, config, token) {
         addSheet: { properties: { title: sheetName }}
     }];
 
-    try { service.spreadsheets.sheets
+    try {
         const res = await service.spreadsheets.batchUpdate({
             spreadsheetId: config.spreadsheetId,
             resource: { requests },
         });
+
+        const sheetId = res.data.replies[0].addSheet.properties.sheetId;
+        if (sheetId) {
+            config.sheetId = sheetId;
+            await service.spreadsheets.batchUpdate({
+                spreadsheetId: config.spreadsheetId,
+                resource: { requests: [
+                    {
+                        addProtectedRange: {
+                            protectedRange: {
+                                range: {
+                                    sheetId: sheetId,
+                                    startRowIndex: 0,
+                                    endRowIndex: 1,
+                                    startColumnIndex: 0,
+                                    endColumnIndex: 10000,
+                                },
+                                description: "Protecting language row",
+                                warningOnly: true
+                            }
+                        }
+                    }
+                ]}
+            });
+        }
 
         return true;
     } catch (err) {

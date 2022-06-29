@@ -109,6 +109,7 @@ const checkGitignore = async () => {
  * @property {String[]} languages - A list of i18n languages denoted by it's keys
  * @property {string} spreadsheetId - ID of google sheet
  * @property {string} sheetName - sheet name in google sheet to reference
+ * @property {number} sheetId - sheet id
  * 
  * @typedef {Object} ConfigBundle
  * @property {boolean} hasConfig - Indicates whether the config files exists
@@ -128,6 +129,7 @@ const checkConfig = () => {
             if (!contents.languages || !Array.isArray(contents.languages)) valid = false;
             if (!contents.spreadsheetId || (typeof contents.spreadsheetId != 'string')) valid = false;
             if (!contents.sheetName || (typeof contents.sheetName != 'string')) valid = false;
+            if ((contents.sheetId == null) || (typeof contents.sheetId != 'number')) valid = false;
             if (!fs.existsSync(contents.path)) valid = false;
             data = contents;
         } catch (err) {
@@ -171,7 +173,7 @@ const checkToken = (location) => {
         try {
             const contents = JSON.parse(fs.readFileSync(path));
             if (!contents.access_token || (typeof contents.access_token != 'string')) valid = false;
-            if (!contents.refresh_token || (typeof contents.refresh_token != 'string')) valid = false;
+            // if (!contents.refresh_token || (typeof contents.refresh_token != 'string')) valid = false;
             if (!contents.scope || (typeof contents.scope != 'string')) valid = false;
             if (!contents.token_type || (typeof contents.token_type != 'string')) valid = false;
             if (!contents.expiry_date || (typeof contents.expiry_date != 'number')) valid = false;

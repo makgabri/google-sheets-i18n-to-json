@@ -15,12 +15,17 @@ const { NOTIFY, QUES, TAGS } = printer;
  */
 const _selectSheet = async (spreadsheet, config) => {
     const sheet = await inquirer.prompt({
-        name: 'name',
+        name: 'properties',
         message: printer.question(QUES.config_select_sheet),
         type: 'list',
-        choices: spreadsheet.sheets.map(sheet => sheet.properties.title)
+        choices: spreadsheet.sheets.map(sheet => { return {
+            name: sheet.properties.title,
+            value: { sheetId: sheet.properties.sheetId, sheetName: sheet.properties.title },
+            short: sheet.properties.title
+        }})
     });
-    config.sheetName = sheet.name;
+    config.sheetName = sheet.properties.sheetName;
+    config.sheetId = sheet.properties.sheetId;
 }
 
 /**

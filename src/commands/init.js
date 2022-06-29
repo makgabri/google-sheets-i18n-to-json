@@ -19,8 +19,10 @@ const _generateSpreadsheet = async (config, token) => {
     });
     let newSpreadsheetData = await createSpreadsheet(spreadsheet_name.value, sheet_name.value, token);
     if (!newSpreadsheetData) return;
+
     config.spreadsheetId = newSpreadsheetData.spreadsheetId;
     config.sheetName = newSpreadsheetData.sheets[0]?.properties.title;
+    config.sheetId = newSpreadsheetData.sheets[0]?.properties.sheetId;
 
     return await initializeSpreadsheetInfo(config, token);
 }
