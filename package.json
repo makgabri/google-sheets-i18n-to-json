@@ -1,6 +1,6 @@
 {
   "name": "google-sheets-i18n-to-json",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Assuming the template, will extract google sheets data to json files for I18N use.",
   "main": "index.js",
   "scripts": {

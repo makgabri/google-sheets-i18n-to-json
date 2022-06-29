@@ -2,6 +2,10 @@
 
 ![logo](https://user-images.githubusercontent.com/36118824/176408861-667d1731-7f7c-41b0-9aa7-767ef5e53adb.png)
 
+![MIT License](https://badgen.net/badge/license/MIT/blue)
+![Terminal](https://badgen.net/badge/icon/terminal?icon=terminal&label)
+![NPM Version](https://badgen.net/npm/v/google-sheets-i18n-to-json)
+
 Google Sheets I18N To JSON is a command line tool to help pull google sheets as JSON objects for I18N use.
 
 The idea is that you have a google spreadsheet where you have a google spreadsheet to maintain a reference of keys to text corresponding to the language. This way both developers and clients can be on the same track with official texts for a product.
