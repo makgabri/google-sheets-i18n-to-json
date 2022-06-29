@@ -50,11 +50,11 @@ Commands:
 ### Installation
 Using npm:
 ```console
-foo@bar:~$ npm install --save-dev google-sheets-i18n-to-json
+foo@bar:~$ npm install -g google-sheets-i18n-to-json
 ```
 Using yarn:
 ```console
-foo@bar:~$ yarn add google-sheets-i18n-to-json -D
+foo@bar:~$ yarn global add google-sheets-i18n-to-json
 ```
 
 ### Using
